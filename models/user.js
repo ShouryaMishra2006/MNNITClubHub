@@ -2,7 +2,8 @@ const mongoose=require('mongoose')
 const userSchema=new mongoose.Schema({
     name:String,
     email:String,
-    password:String
+    password:String,
+    joinedClubs: [{ type: mongoose.Schema.Types.ObjectId, ref: "Club" }],
 })
 const userModel=mongoose.model("User",userSchema)
 module.exports=userModel

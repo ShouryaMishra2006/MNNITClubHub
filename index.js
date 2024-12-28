@@ -2,12 +2,52 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const userModel = require("./models/user");
+const clubRoutes = require('./routes/clubRoutes');
+const eventRoutes=require('./routes/eventRoutes')
 const bcrypt = require("bcrypt");
+const jwt=require('jsonwebtoken')
+const cookieParser=require('cookie-parser')
+const passport = require('passport');
+const session = require('express-session');
 const app = express();
-
+require('./passport');
+app.use(session({ secret: 'your-session-secret', resave: false, saveUninitialized: true }));
+app.use(passport.initialize());
+app.use(passport.session());
+app.get('/auth/google', passport.authenticate('google', {
+    scope: ['profile', 'email'], 
+}));
+app.get('/auth/google/callback', passport.authenticate('google', {
+    failureRedirect: '/login',
+}),
+(req, res) => {
+    res.redirect('/');
+});
+app.get('/', (req, res) => {
+    res.send(req.user ? `Hello, ${req.user.displayName}!` : 'Not logged in.');
+});
+app.get('/logout', (req, res) => {
+    req.logout();
+    res.redirect('/');
+});
 app.use(express.json());
-app.use(cors());
-
+app.use(cookieParser());
+app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
+const verifyUser=(req,res,next)=>{
+   const token=req.cookies.token
+   console.log(token)
+}
+app.get('/',verifyUser,(req,res)=>{
+  const token=req.cookies.token
+  if(!token){
+     return res.json("the token is not generated")
+  }
+  else{
+    jwt.verify(token,"jwt-secret-key",(err,decoded)=>{
+      if(err) return res.json("the token is not available")
+    })
+  }
+})
 mongoose
   .connect("mongodb://localhost:27017/MNNITHub")
   .then(() => console.log("Connected to MongoDB"))
@@ -24,6 +64,8 @@ app.post("/LoginUser", (req, res) => {
           .compare(password, user.password)
           .then((isMatch) => {
             if (isMatch) {
+              const token=jwt.sign({email:user.email},"jwt-secret-key",{expiresIn:"1d"})
+              res.cookie("token",token)
               res.json({
                 success: true,
                 message: "Successfully logged in",
@@ -77,7 +119,22 @@ app.post("/RegUser", (req, res) => {
         }
       });
   });
-  
-app.listen(3001, () => {
+
+app.use('/api', clubRoutes);
+app.use('/api',eventRoutes)
+const server= app.listen(3001, () => {
   console.log("Server is running on port 3001");
 });
+const io= require('socket.io')(server,{
+  pingTimeout:60000,
+  cors:{
+    origin:'http://localhost:5173',methods: ["GET", "POST"], 
+    credentials: true     
+  }
+})
+io.on("connection",(socket)=>{
+  console.log("connected to socket.io")
+  socket.on('setup',(userdata)=>{
+    socket.join(userdata._id)
+  })
+})
