@@ -9,7 +9,7 @@ function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
-
+  axios.defaults.withCredentials=true
   const handleDashboard = (event) => {
     event.preventDefault();
     console.log("Logging in as User");
@@ -43,7 +43,7 @@ function LoginPage() {
   };
 
   return (
-    <div className="bg">
+    <div className="bg flex justify-center p-20">
       <div className="wrapper">
         <form onSubmit={handleDashboard}>
           <h1>Login</h1>

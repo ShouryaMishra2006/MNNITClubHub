@@ -1,268 +1,194 @@
-import React, { useState } from 'react';
-import { Users, Calendar, MessageSquare, Bell, Mail, Github, Twitter, MessageCircle, ThumbsUp, Share2, Star, Bookmark } from 'lucide-react';
-
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { Github, Calendar, MessageSquare, Send } from "lucide-react";
+import { io } from "socket.io-client";
+const ENDPOINT = "http://localhost:3001";
+var socket, selectedChatCompare;
 function Clubs() {
-  const [isJoined, setIsJoined] = useState(false);
-  
-  const members = [
-    { id: 1, name: 'Shourya Mishra', role: 'President', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150', status: 'online' },
-    { id: 2, name: 'Sidharth Gupta', role: 'Vice President', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150', status: 'away' },
-    { id: 3, name: 'Shreya', role: 'Member', avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150', status: 'online' },
-    { id: 4, name: 'Shashwat', role: 'Member', avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150', status: 'offline' }
-  ];
+  const { clubId } = useParams();
+  const [club, setClub] = useState(null);
+  const [events, setEvents] = useState([]);
+  const [messages, setMessages] = useState([]); // State for chat messages
+  const [newMessage, setNewMessage] = useState(""); // Input for new message
+  const navigate = useNavigate();
+  useEffect(() => {
+    socket = io(ENDPOINT, {
+      transports: ["websocket"],
+      withCredentials: true,
+    });
+  }, []);
+  useEffect(() => {
+    // Fetch club details
+    fetch(`http://localhost:3001/api/clubs/${clubId}`)
+      .then((response) => response.json())
+      .then((data) => setClub(data))
+      .catch((error) => console.error("Error fetching club details:", error));
 
-  const events = [
-    {
-      id: 1,
-      title: 'CodeSangam 2024',
-      date: 'November 9, 2024',
-      time: '9:00 AM',
-      location: 'Computer Centre',
-      description: 'Coding Competitions, Webster',
-      attendees: 45
-    },
-    {
-      id: 2,
-      title: 'Tech Talk: AI Ethics',
-      date: 'November 10, 2024',
-      time: '5:00 PM ',
-      location: 'Virtual Meeting',
-      description: 'Discussion on ethical implications of AI development.',
-      attendees: 32
-    }
-  ];
+    // Fetch events
+    fetch(`http://localhost:3001/api/clubs/${clubId}/events`)
+      .then((response) => response.json())
+      .then((data) => setEvents(data))
+      .catch((error) => console.error("Error fetching events:", error));
 
-  const discussions = [
-    {
-      id: 1,
-      author: 'Shourya Mishra',
-      avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150',
-      title: 'Ideas for next hackathon theme',
-      content: 'I was thinking we could focus on sustainability and green tech. What do you all think?',
-      likes: 12,
-      replies: 5,
-      timestamp: '2 hours ago',
-      tags: ['hackathon', 'planning', 'sustainability']
-    },
-    {
-      id: 2,
-      author: 'Sidharth Gupta',
-      avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150',
-      title: 'Workshop session proposals',
-      content: 'Looking for volunteers to lead workshops next month. Please share your ideas!',
-      likes: 8,
-      replies: 3,
-      timestamp: '5 hours ago',
-      tags: ['workshop', 'community']
-    },
-    {
-    id: 3,
-      author: 'Shourya Mishra',
-      avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150',
-      title: 'Ideas for next hackathon theme',
-      content: 'I was thinking we could focus on sustainability and green tech. What do you all think?',
-      likes: 12,
-      replies: 5,
-      timestamp: '2 hours ago',
-      tags: ['hackathon', 'planning', 'sustainability']
-    },
-    {
-        id: 4,
-        author: 'Sidharth Gupta',
-        avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150',
-        title: 'Workshop session proposals',
-        content: 'Looking for volunteers to lead workshops next month. Please share your ideas!',
-        likes: 8,
-        replies: 3,
-        timestamp: '5 hours ago',
-        tags: ['workshop', 'community']
-      },
-  ];
+    // Fetch initial messages (replace with real-time WebSocket logic)
+    fetch(`http://localhost:3001/api/club/${clubId}/messages`)
+      .then((response) => response.json())
+      .then((data) => setMessages(data))
+      .catch((error) => console.error("Error fetching messages:", error));
+  }, [clubId]);
+
+  const handleSendMessage = () => {
+    if (newMessage.trim() === "") return;
+
+    const message = {
+      sender: "You",
+      text: newMessage,
+      timestamp: new Date().toLocaleTimeString(),
+    };
+    console.log(message);
+    setMessages([...messages, message]);
+    setNewMessage("");
+    fetch(`http://localhost:3001/api/club/${clubId}/messages`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(message),
+    }).catch((error) => console.error("Error sending message:", error));
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-sky-600 to-gray-100">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-800 text-white">
-        <div className="container mx-auto px-4 py-8">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="bg-white/10 p-3 rounded-lg backdrop-blur-sm">
-                <Github className="h-10 w-10" />
-              </div>
-              <div>
-                <h1 className="text-3xl font-bold">CC Club MNNIT</h1>
-                <p className="text-blue-100">Where passionate developers meet</p>
-              </div>
-            </div>
-            <button
-              onClick={() => setIsJoined(!isJoined)}
-              className="px-6 py-2 rounded-full font-semibold transition-all transform hover:scale-105
-            bg-red-500 hover:bg-red-600"
-        
-            >
-              Leave Club
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Content */}
-          <div className="lg:col-span-2 space-y-8">
-            {/* Announcements */}
-            <section className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-gray-800 flex items-center">
-                  <Bell className="h-6 w-6 mr-2 text-blue-600" />
-                  Announcements
-                </h2>
-              </div>
-              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-500 p-4 rounded">
-                <div className="flex items-start">
-                  <Star className="h-5 w-5 text-yellow-500 mt-1 mr-3" />
-                  <div>
-                    <h3 className="font-semibold text-blue-800">Welcome to our new club platform!</h3>
-                    <p className="text-blue-700 mt-1">We're excited to have you here. Explore our upcoming events and join the discussions.</p>
-                  </div>
+    <div className="min-h-screen bg-gradient-to-b from-sky-600 to-gray-100 flex">
+      {/* Main Content */}
+      <div className="flex-1">
+        {/* Club Header */}
+        <div className="bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-800 text-white">
+          <div className="container mx-auto px-4 py-8">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <div className="bg-white/10 p-3 rounded-lg backdrop-blur-sm">
+                  <Github className="h-10 w-10" />
+                </div>
+                <div>
+                  <h1 className="text-3xl font-bold">
+                    {club ? club.name : "Loading..."}
+                  </h1>
+                  <p className="text-blue-100">
+                    {club ? club.description : "Loading club description..."}
+                  </p>
                 </div>
               </div>
-            </section>
-
-            {/* Discussions */}
-            <section className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-gray-800 flex items-center">
-                  <MessageSquare className="h-6 w-6 mr-2 text-blue-600" />
-                  Discussions
-                </h2>
-                <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all transform hover:scale-105 flex items-center">
-                  <MessageSquare className="h-4 w-4 mr-2" />
-                  New Post
-                </button>
-              </div>
-              <div className="space-y-6">
-                {discussions.map(discussion => (
-                  <div key={discussion.id} className="border-b pb-6 last:border-b-0 last:pb-0 hover:bg-gray-50 p-4 rounded-lg transition-colors">
-                    <div className="flex items-start space-x-4">
-                      <img
-                        src={discussion.avatar}
-                        alt={discussion.author}
-                        className="w-10 h-10 rounded-full ring-2 ring-blue-100"
-                      />
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-2">
-                            <h3 className="font-semibold text-gray-800">{discussion.author}</h3>
-                            <span className="text-sm text-gray-500">• {discussion.timestamp}</span>
-                          </div>
-                        </div>
-                        <h4 className="font-medium text-gray-800 mt-1">{discussion.title}</h4>
-                        <p className="text-gray-600 mt-2">{discussion.content}</p>
-                        <div className="flex flex-wrap gap-2 mt-3">
-                          {discussion.tags.map(tag => (
-                            <span key={tag} className="px-2 py-1 bg-blue-50 text-blue-600 rounded-full text-xs font-medium">
-                              #{tag}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-                <button className="w-full mt-4 text-sm text-blue-600 hover:text-blue-700 font-medium bg-blue-50 py-2 px-4 rounded-lg hover:bg-blue-100 transition-colors">
-                  View all Discussions →
-                </button>
-              </div>
-            </section>
+            </div>
           </div>
+        </div>
 
-          {/* Sidebar */}
-          <div className="space-y-8">
-            {/* Events */}
-            <section className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-              <h2 className="text-xl font-bold text-gray-800 flex items-center mb-6">
+        {/* Events Section */}
+        <div className="container mx-auto px-4 py-8">
+          <section className="bg-white w-full rounded-xl shadow-sm p-6 border border-gray-100">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-bold text-gray-800 flex items-center">
                 <Calendar className="h-5 w-5 mr-2 text-blue-600" />
                 Upcoming Events
               </h2>
-              <div className="space-y-4">
-                {events.map(event => (
-                  <div key={event.id} className="border-b last:border-b-0 pb-4 last:pb-0 hover:bg-gray-50 p-3 rounded-lg transition-colors">
+              <button
+                onClick={() => navigate("/createvent")}
+                className="px-4 py-2 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700"
+              >
+                Create Event
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              {Array.isArray(events) && events.length > 0 ? (
+                events.map((event) => (
+                  <div
+                    key={event.id}
+                    className="border-b last:border-b-0 pb-4 last:pb-0 hover:bg-gray-50 p-3 rounded-lg transition-colors"
+                  >
                     <div className="flex justify-between items-start">
                       <div>
-                        <h3 className="font-semibold text-gray-800">{event.title}</h3>
-                        <p className="text-sm text-gray-600 mt-1">{event.date} • {event.time}</p>
-                        <p className="text-sm text-gray-600">{event.location}</p>
+                        <h3 className="font-semibold text-gray-800">
+                          {event.title}
+                        </h3>
+                        <p className="text-sm text-gray-600 mt-1">
+                          {event.date} • {event.time}
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          {event.location}
+                        </p>
                       </div>
                       <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
                         {event.attendees} Registered
                       </span>
                     </div>
-                    <p className="text-sm text-gray-700 mt-2">{event.description}</p>
+                    <p className="text-sm text-gray-700 mt-2">
+                      {event.description}
+                    </p>
                     <button className="mt-3 text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center">
                       Register
                       <span className="ml-1">→</span>
                     </button>
                   </div>
-                ))}
-              </div>
-            </section>
+                ))
+              ) : (
+                <p>No events available</p>
+              )}
+            </div>
+          </section>
+        </div>
+      </div>
 
-            {/* Members */}
-            <section className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-              <h2 className="text-xl font-bold text-gray-800 flex items-center mb-6">
-                <Users className="h-5 w-5 mr-2 text-blue-600" />
-                Members
-              </h2>
-              <div className="space-y-4">
-                {members.map(member => (
-                  <div key={member.id} className="flex items-center space-x-3 hover:bg-gray-50 p-2 rounded-lg transition-colors">
-                    <div className="relative">
-                      <img
-                        src={member.avatar}
-                        alt={member.name}
-                        className="w-8 h-8 rounded-full ring-2 ring-white"
-                      />
-                      <span className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full ring-2 ring-white ${
-                        member.status === 'online' ? 'bg-green-500' :
-                        member.status === 'away' ? 'bg-yellow-500' : 'bg-gray-500'
-                      }`} />
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-800">{member.name}</p>
-                      <p className="text-sm text-gray-500">{member.role}</p>
-                    </div>
-                  </div>
-                ))}
-                <button className="w-full mt-4 text-sm text-blue-600 hover:text-blue-700 font-medium bg-blue-50 py-2 px-4 rounded-lg hover:bg-blue-100 transition-colors">
-                  View all members →
-                </button>
-              </div>
-            </section>
-            <section className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-              <h2 className="text-xl font-bold text-gray-800 flex items-center mb-6">
-                <Mail className="h-5 w-5 mr-2 text-blue-600" />
-                Contact Us
-              </h2>
-              <div className="space-y-4">
-                <a
-                  href="#"
-                  className="flex items-center space-x-2 text-gray-600 hover:text-blue-600 p-2 hover:bg-blue-50 rounded-lg transition-colors"
+      {/* Chat Section */}
+      <div className="w-96 bg-white shadow-md border-l border-gray-200 flex flex-col">
+        <div className="p-4 bg-blue-600 text-white flex items-center justify-between">
+          <h2 className="text-lg font-bold flex items-center">
+            <MessageSquare className="h-5 w-5 mr-2" />
+            Discussions
+          </h2>
+        </div>
+
+        {/* Chat Messages */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-3">
+          {messages.length > 0 ? (
+            messages.map((message, index) => (
+              <div
+                key={index}
+                className={`flex ${
+                  message.sender === "You" ? "justify-end" : ""
+                }`}
+              >
+                <div
+                  className={`max-w-sm p-3 rounded-lg ${
+                    message.sender === "You" ? "bg-blue-100" : "bg-gray-100"
+                  } shadow`}
                 >
-                  <Github className="h-5 w-5" />
-                  <span>@ccClubMNNIT</span>
-                </a>
-                <a
-                  href="#"
-                  className="flex items-center space-x-2 text-gray-600 hover:text-blue-600 p-2 hover:bg-blue-50 rounded-lg transition-colors"
-                >
-                  <Mail className="h-5 w-5" />
-                  <span>ccClub@mnnit.ac.in</span>
-                </a>
+                  <p className="text-sm text-gray-800">{message.text}</p>
+                  <p className="text-xs text-gray-500 text-right">
+                    {message.timestamp}
+                  </p>
+                </div>
               </div>
-            </section>
+            ))
+          ) : (
+            <p className="text-gray-600">No messages yet</p>
+          )}
+        </div>
+
+        {/* Message Input */}
+        <div className="p-4 border-t border-gray-200">
+          <div className="flex items-center">
+            <input
+              type="text"
+              className="flex-1 px-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+              placeholder="Type a message..."
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+            />
+            <button
+              onClick={handleSendMessage}
+              className="ml-3 px-4 py-2 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700"
+            >
+              <Send className="h-5 w-5" />
+            </button>
           </div>
-          
         </div>
       </div>
     </div>

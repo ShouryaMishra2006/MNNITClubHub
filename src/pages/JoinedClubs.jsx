@@ -40,21 +40,23 @@ const HomePage = () => {
   const HandleClubs = (clubId) => {
     setClubId(clubId);
     console.log("Navigating to club discussions");
-    navigate(`/ClubOverview/${clubId}`);
+    navigate(`/ClubUser/${clubId}`);
   };
   useEffect(() => {
     const storedName = localStorage.getItem("userName");
     if (storedName) setUserName(storedName); 
     axios
-        .get(`http://localhost:3001/api/yourclubs?username=${storedName}`)
+        .get(`http://localhost:3001/api/joinedclubs?username=${storedName}`)
         .then(response => {
-          setClubs(response.data.clubs);
+          setClubs(response.data.joinedClubs);
           setLoading(false);
         })
         .catch(err => {
-          setError("Failed to fetch clubs");
+          setError(`${err}`);
           setLoading(false);
         });
+        console.log(clubs)
+        console.log(error)
   }, []);
   if (loading) return <div>Loading...</div>;
   if (error) return <div>{error}</div>;
@@ -101,7 +103,7 @@ const HomePage = () => {
             <main className="flex-grow p-8 w-full">
               <section className="mt-12">
                 <h2 className="text-3xl font-semibold text-center text-sky-400 mb-6">
-                  Your Clubs
+                  Clubs You are a Part of 
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                   {clubs.map((club, index) => (
@@ -117,7 +119,7 @@ const HomePage = () => {
                         className="bg-sky-700 text-gray-100 px-4 py-2 rounded hover:bg-sky-500"
                         onClick={() => HandleClubs(club._id)}
                       >
-                        See Club Discussions
+                        Join Discussions
                       </button>
                     </div>
                   ))}

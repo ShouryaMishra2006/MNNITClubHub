@@ -42,7 +42,7 @@ function SignUpPage() {
   };
 
   return (
-    <div className="bg">
+    <div className="bg flex justify-center p-20">
       <div className="wrapper">
         <form onSubmit={handleSubmit}>
           <h1>Register</h1>
@@ -87,8 +87,10 @@ function SignUpPage() {
           <button type="submit" className="btn">
             Register
           </button>
-          <button id="oauth">
-            <a href="/oauth">Register using Google</a>
+          <button 
+            onClick={() => window.location.href = `http://localhost:3001/auth/google`}
+            id="oauth">
+            Register using Google
           </button>
         </form>
       </div>

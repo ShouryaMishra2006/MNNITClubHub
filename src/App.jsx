@@ -7,8 +7,12 @@ import RegUser from "./pages/RegUser";
 import AdminDashboard from "./AdminDashboard";
 import UserPage from "./pages/UserPage";
 import UserClubs from "./pages/UserClubs";
+import JoinedClubs from "./pages/JoinedClubs";
 import ClubOverview from "./pages/ClubOverview"
 import Profile from "./pages/UserCredentials"
+import CreateClub from "./pages/createClub"
+import Createvent from "./pages/createvent"
+import ClubUser from "./pages/clubuser"
 function App() {
   return (
     <Router>
@@ -21,8 +25,12 @@ function App() {
           <Route path="/RegUser" element={<RegUser/>}/>
           <Route path="/UserPage" element={<UserPage/>}/>
           <Route path="/UserClubs" element={<UserClubs/>}/>
-          <Route path="/ClubOverview" element={<ClubOverview/>}/>
+          <Route path="/ClubOverview/:clubId" element={<ClubOverview/>}/>
+          <Route path="/ClubUser/:clubId" element={<ClubUser/>}/>
           <Route path="/Profile" element={<Profile/>}/>
+          <Route path="/createClub" element={<CreateClub/>}/>
+          <Route path="/createvent" element={<Createvent/>}/>
+          <Route path="/JoinedClubs" element={<JoinedClubs/>}/>
         </Routes>
       </div>
     </Router>
