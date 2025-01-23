@@ -1,5 +1,6 @@
 const Event = require('../models/event');
 const Club =require('../models/clubs');
+const User=require('../models/user')
 exports.createEvent = async (req, res) => {
   const { club, title, date, time, location, description, attendees } = req.body;
   console.log(req.body);
@@ -45,3 +46,37 @@ exports.getEvents = async (req, res) => {
           res.status(500).json({ success: false, message: "Error fetching error" });
         }
 };
+exports.registerEvent=async(req,res)=>{
+  const { eventId } = req.params; 
+  const { name } = req.body; 
+
+  try {
+    const event = await Event.findById(eventId);
+    if (!event) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+    const user = await User.findOne({ name });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    if (user.RegisteredEvents.includes(eventId)) {
+      return res.status(400).json({ message: "User already registered for this event" });
+    }
+    user.RegisteredEvents.push(eventId);
+    event.attendees+=1;
+    await event.save();
+    await user.save(); 
+    console.log(user.RegisteredEvents)
+    return res.status(200).json({
+      message: "Successfully registered for the event",
+      user,
+      RegisteredEvents: user.RegisteredEvents, 
+    });
+  } catch (error) {
+    console.error("Error in handleRegister:", error);
+    return res.status(500).json({
+      message: "An error occurred during registration",
+      error: error.message,
+    });
+  }
+}
