@@ -1,24 +1,29 @@
-
 import { useNavigate } from "react-router-dom";
 
 const Navbar = () => {
   const navigate = useNavigate();
 
   const handleLoginClick = () => {
-    navigate('./LoginUser');
+    navigate("./LoginUser");
   };
 
   return (
-    <nav className="bg-sky-900 text-white p-4 flex justify-between">
-      <h1 className="text-xl font-bold">MNNITClubHub</h1>
-      <div className="relative dropdown">
-        <button
-          className="bg-white text-sky-900 px-4 py-2 rounded"
-          onClick={handleLoginClick}
-        >
-          Login
-        </button>
-        
+    <nav className="bg-gradient-to-r from-purple-700 to-purple-500 text-white p-4 shadow-lg fixed w-full z-50">
+      <div className="container mx-auto flex justify-between items-center">
+        {/* Logo Section */}
+        <h1 className="text-2xl font-extrabold tracking-wider cursor-pointer hover:text-purple-200 transition-all">
+          MNNITClubHub
+        </h1>
+
+        {/* Login Button */}
+        <div className="relative">
+          <button
+            className="bg-white text-purple-900 px-5 py-2 font-semibold rounded-lg shadow-md hover:bg-purple-200 hover:shadow-lg focus:ring-4 focus:ring-yellow-300 transition-all transform hover:scale-105"
+            onClick={handleLoginClick}
+          >
+            Login
+          </button>
+        </div>
       </div>
     </nav>
   );

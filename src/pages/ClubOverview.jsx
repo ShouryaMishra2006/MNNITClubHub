@@ -1,53 +1,70 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Github, Calendar, MessageSquare, Send } from "lucide-react";
+import { Github, Calendar, MessageSquare, Send, Users } from "lucide-react";
 import { io } from "socket.io-client";
+
 const ENDPOINT = "http://localhost:3001";
-var socket, selectedChatCompare;
+let socket;
+
 function Clubs() {
   const { clubId } = useParams();
   const [club, setClub] = useState(null);
   const [events, setEvents] = useState([]);
-  const [messages, setMessages] = useState([]); // State for chat messages
-  const [newMessage, setNewMessage] = useState(""); // Input for new message
+  const [messages, setMessages] = useState([]);
+  const [newMessage, setNewMessage] = useState("");
+  const [members, setMembers] = useState([]);
   const navigate = useNavigate();
+  const storedName = localStorage.getItem("userName");
   useEffect(() => {
     socket = io(ENDPOINT, {
       transports: ["websocket"],
       withCredentials: true,
     });
-  }, []);
+
+    socket.emit("joinRoom", clubId);
+
+    socket.on("messageReceived", (newMessage) => {
+      setMessages((prevMessages) => [...prevMessages, newMessage]);
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [clubId]);
   useEffect(() => {
-    // Fetch club details
     fetch(`http://localhost:3001/api/clubs/${clubId}`)
       .then((response) => response.json())
-      .then((data) => setClub(data))
+      .then((data) => {
+        setClub(data);
+        console.log(data);
+        setMembers(data.members);
+        console.log(members);
+      })
       .catch((error) => console.error("Error fetching club details:", error));
-
-    // Fetch events
     fetch(`http://localhost:3001/api/clubs/${clubId}/events`)
       .then((response) => response.json())
       .then((data) => setEvents(data))
       .catch((error) => console.error("Error fetching events:", error));
 
-    // Fetch initial messages (replace with real-time WebSocket logic)
     fetch(`http://localhost:3001/api/club/${clubId}/messages`)
       .then((response) => response.json())
       .then((data) => setMessages(data))
       .catch((error) => console.error("Error fetching messages:", error));
   }, [clubId]);
-
   const handleSendMessage = () => {
     if (newMessage.trim() === "") return;
 
     const message = {
-      sender: "You",
+      sender: storedName,
       text: newMessage,
       timestamp: new Date().toLocaleTimeString(),
     };
-    console.log(message);
-    setMessages([...messages, message]);
+
+    socket.emit("sendMessage", { clubId, message });
+
+    setMessages((prevMessages) => [...prevMessages, message]);
     setNewMessage("");
+
     fetch(`http://localhost:3001/api/club/${clubId}/messages`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -57,7 +74,6 @@ function Clubs() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-sky-600 to-gray-100 flex">
-      {/* Main Content */}
       <div className="flex-1">
         {/* Club Header */}
         <div className="bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-800 text-white">
@@ -81,7 +97,7 @@ function Clubs() {
         </div>
 
         {/* Events Section */}
-        <div className="container mx-auto px-4 py-8">
+        <div className="container mx-auto px-4 py-8 space-y-8">
           <section className="bg-white w-full rounded-xl shadow-sm p-6 border border-gray-100">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-bold text-gray-800 flex items-center">
@@ -95,7 +111,6 @@ function Clubs() {
                 Create Event
               </button>
             </div>
-
             <div className="space-y-4">
               {Array.isArray(events) && events.length > 0 ? (
                 events.map((event) => (
@@ -122,14 +137,39 @@ function Clubs() {
                     <p className="text-sm text-gray-700 mt-2">
                       {event.description}
                     </p>
-                    <button className="mt-3 text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center">
-                      Register
-                      <span className="ml-1">→</span>
-                    </button>
                   </div>
                 ))
               ) : (
                 <p>No events available</p>
+              )}
+            </div>
+          </section>
+          {/* Club Members Section */}
+          <section className="bg-white w-full rounded-xl shadow-sm p-6 border border-gray-100">
+            <h2 className="text-xl font-bold text-gray-800 flex items-center mb-6">
+              <Users className="h-5 w-5 mr-2 text-blue-600" />
+              Club Members
+            </h2>
+            <div
+              className="space-y-3"
+              style={{
+                maxHeight: "300px", 
+                overflowY: "auto", 
+              }}
+            >
+              {Array.isArray(members) && members.length > 0 ? (
+                members.map((member) => (
+                  <div
+                    key={member._id}
+                    className="flex items-center justify-between bg-gray-50 p-3 rounded-lg shadow-sm hover:bg-gray-100"
+                  >
+                    <div>
+                      <p className="text-gray-800 font-medium">{member}</p>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p>No members found</p>
               )}
             </div>
           </section>
@@ -146,20 +186,28 @@ function Clubs() {
         </div>
 
         {/* Chat Messages */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-3">
+        <div
+          className="flex-1 overflow-y-auto p-4 space-y-3"
+          style={{ maxHeight: "700px" }}
+        >
           {messages.length > 0 ? (
             messages.map((message, index) => (
               <div
                 key={index}
                 className={`flex ${
-                  message.sender === "You" ? "justify-end" : ""
+                  message.sender === storedName ? "justify-end" : ""
                 }`}
               >
                 <div
                   className={`max-w-sm p-3 rounded-lg ${
-                    message.sender === "You" ? "bg-blue-100" : "bg-gray-100"
+                    message.sender === storedName
+                      ? "bg-blue-100"
+                      : "bg-gray-100"
                   } shadow`}
                 >
+                  <p className="text-xl font-semibold text-blue-900">
+                    {message.sender === storedName ? "You" : message.sender}
+                  </p>
                   <p className="text-sm text-gray-800">{message.text}</p>
                   <p className="text-xs text-gray-500 text-right">
                     {message.timestamp}
