@@ -9,6 +9,6 @@ const userSchema=new mongoose.Schema({
     },
     joinedClubs: [{ type: mongoose.Schema.Types.ObjectId, ref: "Club" }],
     RegisteredEvents:[{type:mongoose.Schema.Types.ObjectId,ref:"Event"}],
-})
+}, { timestamps: true });
 const userModel=mongoose.model("User",userSchema)
 module.exports=userModel

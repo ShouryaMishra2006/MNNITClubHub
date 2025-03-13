@@ -60,16 +60,34 @@ app.get('/', (req, res) => {
     res.send(req.user ?`Hello, ${req.user.displayName}! `: 'Not logged in.');
 });
 app.get('/logout', (req, res) => {
-    req.logout();
-    res.redirect('/');
+  try{
+  res.clearCookie("token", { httpOnly: true, secure: false, sameSite: 'Lax' }); 
+  console.log("done")
+  }
+  catch(err){
+    console.log(err)
+  }
+  res.status(200).json({ success: true, message: "Logged out successfully" });
 });
+
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors({ origin: `${process.env.CORS_ORIGIN}`, credentials: true }));
-const verifyUser=(req,res,next)=>{
-   const token=req.cookies.token
-   console.log(token)
-}
+const verifyUser = (req, res, next) => {
+  const token = req.cookies.token;
+  if (!token) {
+      return res.status(401).json({ success: false, message: "Unauthorized: No token provided" });
+  }
+  
+  jwt.verify(token, process.env.JWT_SECRET_KEY, (err, decoded) => {
+      if (err) {
+          return res.status(403).json({ success: false, message: "Forbidden: Invalid token" });
+      }
+      req.user = decoded; 
+      next();
+  });
+};
+
 app.get('/',verifyUser,(req,res)=>{
   const token=req.cookies.token
   if(!token){
@@ -98,7 +116,12 @@ app.post("/LoginUser", (req, res) => {
           .then((isMatch) => {
             if (isMatch) {
               const token=jwt.sign({email:user.email},`${process.env.JWT_SECRET_KEY}`,{expiresIn:"1d"})
-              res.cookie("token",token)
+              res.cookie("token", token, {
+                httpOnly: true, // Prevents JavaScript access
+                secure: process.env.NODE_ENV === "production", // Secure in production
+                sameSite: "Strict", // Prevents CSRF attacks
+                maxAge: 24 * 60 * 60 * 1000, // 1 day expiration
+              });
               res.json({
                 success: true,
                 message: "Successfully logged in",
