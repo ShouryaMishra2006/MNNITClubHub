@@ -141,6 +141,19 @@ const HomePage = () => {
     { title: "Coding Hackathon", date: "2024-11-15", time: "9:00 AM" },
     { title: "Aero Club Open House", date: "2024-11-20", time: "1:00 PM" },
   ];
+  const handleLogout = async () => {
+    try {
+      const response=fetch("http://localhost:3001/logout", {
+        method: "GET",
+        credentials: "include",
+      })
+        console.log(response)
+        if(!response.ok) console.log(response)
+        window.location.href = "/LoginUser"; 
+    } catch (error) {
+        console.error("Logout failed:", error);
+    }
+};
 
   return (
     <div className="h-screen w-full bg-gray-900/50 text-gray-100">
@@ -169,6 +182,7 @@ const HomePage = () => {
                 <FontAwesomeIcon icon={faUser} />
                 <span>{userName || "User"}</span>
               </button>
+              <button onClick={handleLogout} className="font-bold hover:underline">Logout</button>
             </div>
           </div>
         </nav>

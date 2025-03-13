@@ -1,9 +1,11 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate ,useParams} from "react-router-dom";
 import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 function CreateClubPage() {
+  const { user } = useParams();
+  const [userName, setUserName] = useState("");
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [president, setPresident] = useState("");
@@ -49,7 +51,7 @@ function CreateClubPage() {
           toast.success("Club created successfully!", {
             autoClose: 3000,
           });
-          navigate("/UserPage");
+          navigate(`/UserPage/${username}`);
         } else {
           toast.error("Failed to create club: " + result.data.message, {
             autoClose: 3000,
