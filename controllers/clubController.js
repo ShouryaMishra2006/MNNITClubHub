@@ -2,17 +2,15 @@ const Club = require("../models/clubs");
 const Message = require("../models/Messages");
 const User = require("../models/user");
 exports.createClub = async (req, res) => {
-  const { name, description, president, username,imageUrl } = req.body;
+  const { name, description, president, username, imageUrl } = req.body;
   console.log(req.body);
   try {
     const existingClub = await Club.findOne({ name });
     if (existingClub) {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message: "Club with this name already exists",
-        });
+      return res.status(400).json({
+        success: false,
+        message: "Club with this name already exists",
+      });
     }
     const newClub = new Club({
       name,
@@ -25,13 +23,11 @@ exports.createClub = async (req, res) => {
     });
     await newClub.save();
 
-    res
-      .status(201)
-      .json({
-        success: true,
-        message: "Club created successfully",
-        club: newClub,
-      });
+    res.status(201).json({
+      success: true,
+      message: "Club created successfully",
+      club: newClub,
+    });
   } catch (error) {
     console.error("Error creating club:", error);
     res.status(500).json({ success: false, message: "Error creating club" });
@@ -69,6 +65,7 @@ exports.getClubById = async (req, res) => {
     if (!club) {
       return res.status(404).json({ message: "Club not found" });
     }
+    console.log("first this: ",club);
     res.status(200).json(club);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -89,7 +86,12 @@ exports.saveMessages = async (req, res) => {
   try {
     const { sender, text } = req.body;
     console.log(req.body);
-    const newMessage = new Message({ clubId: req.params.clubId, sender, text ,timestamp: new Date()});
+    const newMessage = new Message({
+      clubId: req.params.clubId,
+      sender,
+      text,
+      timestamp: new Date(),
+    });
     console.log(newMessage);
     await newMessage.save();
     res.status(201).json(newMessage);
@@ -102,7 +104,7 @@ exports.JoinClub = async (req, res) => {
   try {
     const { userName, clubId } = req.body;
     const user = await User.findOne({ name: userName });
-    const club = await Club.findById(clubId).populate('members', 'name email'); 
+    const club = await Club.findById(clubId).populate("members", "name email");
 
     if (!user || !club) {
       return res.status(404).json({ error: `${user} or ${club} not found` });
@@ -116,10 +118,11 @@ exports.JoinClub = async (req, res) => {
     if (!club.members) {
       club.members = [];
     }
-    user.joinedClubs.push(clubId);
+    user.joinedClubs.push(club);
     await user.save();
-    console.log(user)
+    console.log("this user found : ", user);
     club.members.push(user);
+    console.log("now available members:", club.members);
     club.memberCount += 1;
     await club.save();
 
@@ -143,5 +146,21 @@ exports.getJoinedclubs = async (req, res) => {
   } catch (err) {
     console.error("error fetching clubs", err);
     res.status(500).json({ error: "Internal server error" });
+  }
+};
+exports.getclubmembersnames = async (req, res) => {
+  try {
+    const { members } = req.body;
+    console.log("from frontend",members)
+    const clubmembers = await User.find({ _id: { $in: members } }, "name _id");
+    const names = clubmembers.map((member) => ({
+      id: member._id,
+      name: member.name,
+    }));
+    console.log("club member names",names)
+    res.status(200).json({ success: true, members: names });
+  } catch (err) {
+     console.error("Error fetching member names:", error);
+     res.status(500).json({ success: false, message: "Server error", error: error.message });
   }
 };

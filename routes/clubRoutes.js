@@ -10,5 +10,6 @@ router.get('/clubs/:clubId', clubController.getClubById);
 router.get('/club/:clubId/messages',clubController.getMessages);
 router.post('/club/:clubId/messages',clubController.saveMessages);
 router.post('/club/join',clubController.JoinClub);
+router.post('/club/getclubmembersnames',clubController.getclubmembersnames)
 module.exports = router;
 
