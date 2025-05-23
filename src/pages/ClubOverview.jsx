@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Github, Calendar, MessageSquare, Send, Users } from "lucide-react";
 import { io } from "socket.io-client";
-
+import axios from "axios";
 const ENDPOINT = "http://localhost:3001";
 let socket;
 
@@ -10,6 +10,7 @@ function Clubs() {
   const { clubId } = useParams();
   const [club, setClub] = useState(null);
   const [events, setEvents] = useState([]);
+  const [names, setNames] = useState([]);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
   const [members, setMembers] = useState([]);
@@ -38,7 +39,7 @@ function Clubs() {
         setClub(data);
         console.log(data);
         setMembers(data.members);
-        console.log(members);
+        console.log("club members: ",members);
       })
       .catch((error) => console.error("Error fetching club details:", error));
     fetch(`http://localhost:3001/api/clubs/${clubId}/events`)
@@ -51,6 +52,29 @@ function Clubs() {
       .then((data) => setMessages(data))
       .catch((error) => console.error("Error fetching messages:", error));
   }, [clubId]);
+  useEffect(() => {
+  const fetchNames = async () => {
+    try {
+      console.log("I am changing");
+      console.log("members to fetch names:",members)
+      const response = await axios.post(
+        "http://localhost:3001/api/club/getclubmembersnames",
+        { members },
+        { withCredentials: true }
+      );
+
+      setNames(response.data.members);
+      console.log("names:", response.data.members);
+    } catch (error) {
+      console.error("Error fetching names:", error);
+    }
+  };
+
+  if (clubId) {
+    fetchNames(); 
+  }
+}, [clubId]);
+
   const handleSendMessage = () => {
     if (newMessage.trim() === "") return;
 
@@ -157,14 +181,14 @@ function Clubs() {
                 overflowY: "auto", 
               }}
             >
-              {Array.isArray(members) && members.length > 0 ? (
-                members.map((member) => (
+              {Array.isArray(names) && names.length > 0 ? (
+                names.map((name) => (
                   <div
-                    key={member._id}
+                    key={name._id}
                     className="flex items-center justify-between bg-gray-50 p-3 rounded-lg shadow-sm hover:bg-gray-100"
                   >
                     <div>
-                      <p className="text-gray-800 font-medium">{member}</p>
+                      <p className="text-gray-800 font-medium">{name.name}</p>
                     </div>
                   </div>
                 ))
