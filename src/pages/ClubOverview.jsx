@@ -37,8 +37,9 @@ function Clubs() {
       .then((response) => response.json())
       .then((data) => {
         setClub(data);
-        console.log(data);
+        console.log("club data:",data);
         setMembers(data.members);
+        console.log(data.members)
         console.log("club members: ",members);
       })
       .catch((error) => console.error("Error fetching club details:", error));
@@ -73,7 +74,7 @@ function Clubs() {
   if (clubId) {
     fetchNames(); 
   }
-}, [clubId]);
+}, [clubId,members]);
 
   const handleSendMessage = () => {
     if (newMessage.trim() === "") return;

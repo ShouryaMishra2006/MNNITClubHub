@@ -11,6 +11,7 @@ import { useClub } from "../contexts/clubcontext";
 import * as THREE from "three";
 import NET from "vanta/dist/vanta.net.min";
 import { motion } from "framer-motion";
+import JobBoard from "./JobBoard";
 const HomePage = () => {
   const {user} = useParams()
   const [userName, setUserName] = useState("");

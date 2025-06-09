@@ -11,6 +11,7 @@ import NET from "vanta/dist/vanta.net.min";
 import Spotlight from "../components/Spotlight"
 import Typewriter from "../components/Typewriter"
 import { motion } from "framer-motion";
+import JobBoard from "./JobBoard";
 const HomePage = () => {
   const { user } = useParams();
   const [userName, setUserName] = useState("");
@@ -246,6 +247,7 @@ const HomePage = () => {
             
         </section>
         </Spotlight>
+        <JobBoard/>
       </main>
       <div className="fixed bottom-0 left-0 w-full z-50">
         <Footer />
