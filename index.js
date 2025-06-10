@@ -4,6 +4,7 @@ const cors = require("cors");
 const userModel = require("./models/user");
 const clubRoutes = require("./routes/clubRoutes");
 const eventRoutes = require("./routes/eventRoutes");
+const companyRoutes=require("./routes/companyRoutes")
 const verifyUser = require("./middlewares/auth.middleware");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
@@ -63,7 +64,7 @@ app.get(
   }),
   (req, res) => {
     const username = req.user.name;
-    res.redirect(`${process.env.CORS_ORIGIN}/UserPage/${username}`);
+    res.redirect(`${process.env.USER_ORIGIN}/UserPage/${username}`);
   }
 );
 passport.serializeUser((user, done) => {
@@ -96,7 +97,22 @@ app.get("/logout", (req, res) => {
 
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors({ origin: `${process.env.CORS_ORIGIN}`, credentials: true }));
+const allowedOrigins = [
+  process.env.ADMIN_ORIGIN,
+  process.env.USER_ORIGIN,
+];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true,
+}));
+
 
 app.get("/", verifyUser, (req, res) => {
   const token = req.cookies.token;
@@ -226,13 +242,14 @@ app.post("/RegUser", async (req, res) => {
 
 app.use("/api", clubRoutes);
 app.use("/api", eventRoutes);
+app.use("/api",companyRoutes)
 const server = app.listen(process.env.PORT, () => {
   console.log(`Server is running on port ${process.env.PORT}`);
 });
 const io = require("socket.io")(server, {
   pingTimeout: 60000,
   cors: {
-    origin: `${process.env.CORS_ORIGIN}`,
+    origin: `${process.env.USER_ORIGIN}`,
     methods: ["GET", "POST"],
     credentials: true,
   },
