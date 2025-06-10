@@ -142,3 +142,72 @@ JWT for secure authentication
 
 💼 Provides a centralized portal for students and companies during campus placements.
 
+# 🚀 Future Scope & Improvements
+
+The MNNITClub platform lays a strong foundation for managing student clubs, hosting events, and enabling campus recruitment. To scale this project to real-world production use and broaden its adoption across institutions, we plan to implement the following advanced features:
+
+🔄 1. Batch Resume Processing with Queues
+
+Challenge: Parsing resumes one-by-one creates performance bottlenecks.
+
+Solution: Implement batch processing via message queues (e.g., RabbitMQ, BullMQ, or Kafka) to handle large volumes of resume uploads asynchronously.
+
+Impact: Enhances system responsiveness and stability under heavy load.
+
+🌐 2. Multi-Institute Expansion
+
+Goal: Support onboarding of multiple colleges and universities.
+
+Approach: Introduce institute-level segregation (multi-tenancy via separate schemas or databases).
+
+Outcome: Enables nationwide adoption and networking between clubs across institutes.
+
+📊 3. Interactive Analytics Dashboards
+
+For Clubs: View metrics like event participation, active members, and engagement trends.
+
+For Companies: Access application stats, resume match scores, and recruitment conversion rates.
+
+Tech Stack: Use Recharts, Chart.js, or D3.js for data visualization.
+
+📢 4. Virtual Event Hosting
+
+New Feature: Enable clubs to organize and conduct virtual seminars, hackathons, workshops, and online competitions through the platform.
+
+Integration Options: Add support for Zoom, Google Meet, Jitsi, or custom WebRTC-based video rooms.
+
+Impact: Increases club reach, promotes inclusion, and supports hybrid or fully remote activities.
+
+☁️ 5. Cloud-Optimized Resume Storage
+
+Improvement: Shift from local resume storage to cloud solutions like AWS S3, Google Cloud Storage, or Firebase Storage.
+
+Advantages: Scalability, security, and global access with expirable links.
+
+# 📁 Project Structure
+
+This repository is organized into different branches and directories to separate concerns clearly:
+
+🔀 Branches
+
+main:
+
+Contains the complete frontend code.
+
+👨‍🎓 Student Portal: Root of the main branch.
+
+🏢 Company Panel (Admin): Located inside the admin/ folder within main.
+
+backend:
+
+Contains the entire Node.js backend, including:
+
+Authentication
+
+Resume parsing logic
+
+MongoDB models & controllers
+
+LLM integration for job description parsing
+
+Email service logic
