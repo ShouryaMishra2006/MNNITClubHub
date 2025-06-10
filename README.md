@@ -95,3 +95,50 @@ Ensures better candidate-job alignment through automated parsing and scoring.
 Encourages more companies to recruit from MNNIT due to the seamless platform experience.
 
 Provides data-backed hiring decisions based on AI similarity metrics.
+
+# 🛠️ Tech Stack
+
+💻 Frontend
+
+React.js (with Vite)
+
+TailwindCSS for modern, responsive UI
+
+Socket.io for real-time club discussions
+
+React Router for navigation
+
+🧠 Backend
+
+Node.js + Express.js
+
+MongoDB for document-based data storage
+
+Mongoose for Object Document Mapper
+
+Python for LLM resume parsing
+
+LangChain + Llama3 (Groq API) for intelligent feature extraction
+
+🔧 Other Tools & APIs
+
+Nodemailer for sending emails
+
+Multer for handling file uploads (PDF resumes)
+
+dotenv for environment configuration
+
+JWT for secure authentication
+
+# 🔍 Real World Impact
+
+“Bridging the gap between students and recruiters, fostering community building on campus.”
+
+🎓 Encourages active club participation among MNNIT students.
+
+🤝 Builds community interaction through real-time chat and events.
+
+📈 Boosts placement efficiency via smart resume screening & feature extraction.
+
+💼 Provides a centralized portal for students and companies during campus placements.
+
