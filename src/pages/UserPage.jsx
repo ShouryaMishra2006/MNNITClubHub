@@ -12,6 +12,7 @@ import Spotlight from "../components/Spotlight"
 import Typewriter from "../components/Typewriter"
 import { motion } from "framer-motion";
 import JobBoard from "./JobBoard";
+import API_BASE_URL from "../config";
 const HomePage = () => {
   const { user } = useParams();
   const [userName, setUserName] = useState("");
@@ -84,7 +85,7 @@ const HomePage = () => {
     setUserName(user)
     localStorage.setItem("userName",user);
     axios
-      .get("http://localhost:3001/api/clubs", { withCredentials: true })
+      .get(`${API_BASE_URL}/api/clubs`, { withCredentials: true })
       .then((response) => {
         setClubs(response.data.clubs);
         setLoading(false);
@@ -114,7 +115,7 @@ const HomePage = () => {
     console.log("Joining club:", club);
     console.log(club._id)
     console.log(userName)
-    fetch("http://localhost:3001/api/club/join", {
+    fetch(`${API_BASE_URL}/api/club/join`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -144,7 +145,7 @@ const HomePage = () => {
   ];
   const handleLogout = async () => {
     try {
-      const response=fetch("http://localhost:3001/logout", {
+      const response=fetch(`${API_BASE_URL}/logout`, {
         method: "GET",
         credentials: "include",
       })

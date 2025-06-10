@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Github, Calendar, MessageSquare, Send } from "lucide-react";
 import { useParams } from "react-router-dom";
 import { io } from "socket.io-client";
-
+import API_BASE_URL from "../config";
 const ENDPOINT = "http://localhost:3001";
 let socket;
 function Clubs() {
@@ -17,7 +17,7 @@ function Clubs() {
   const handleRegister = async (eventId) => {
     try {
       const response = await fetch(
-        `http://localhost:3001/api/events/${eventId}/${storedName}/register`,
+        `${API_BASE_URL}/api/events/${eventId}/${storedName}/register`,
         { method: "POST" ,
           headers: {
             "Content-Type": "application/json",
@@ -57,15 +57,15 @@ function Clubs() {
     };
   }, [clubId, newMessage]);
   useEffect(() => {
-    fetch(`http://localhost:3001/api/clubs/${clubId}`)
+    fetch(`${API_BASE_URL}/api/clubs/${clubId}`)
       .then((response) => response.json())
       .then((data) => setClub(data))
       .catch((error) => console.error("Error fetching club details:", error));
-    fetch(`http://localhost:3001/api/clubs/${clubId}/events`)
+    fetch(`${API_BASE_URL}/api/clubs/${clubId}/events`)
       .then((response) => response.json())
       .then((data) => setEvents(data))
       .catch((error) => console.error("Error fetching events:", error));
-    fetch(`http://localhost:3001/api/club/${clubId}/messages`)
+    fetch(`${API_BASE_URL}/api/club/${clubId}/messages`)
       .then((response) => response.json())
       .then((data) => setMessages(data))
       .catch((error) => console.error("Error fetching messages:", error));
@@ -87,7 +87,7 @@ function Clubs() {
       };
       setMessages([...messages, message]);
       setNewMessage("");
-      fetch(`http://localhost:3001/api/club/${clubId}/messages`, {
+      fetch(`${API_BASE_URL}/api/club/${clubId}/messages`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(message),
@@ -119,12 +119,7 @@ function Clubs() {
               <p className="text-blue-100">{club.description}</p>
             </div>
           </div>
-          <button
-            onClick={() => setIsJoined(!isJoined)}
-            className="px-6 py-2 rounded-full font-semibold bg-red-500 hover:bg-red-600"
-          >
-            {isJoined ? "Leave Club" : "Join Club"}
-          </button>
+          
         </div>
       </header>
 

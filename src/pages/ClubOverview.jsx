@@ -5,7 +5,7 @@ import { io } from "socket.io-client";
 import axios from "axios";
 const ENDPOINT = "http://localhost:3001";
 let socket;
-
+import API_BASE_URL from "../config";
 function Clubs() {
   const { clubId } = useParams();
   const [club, setClub] = useState(null);
@@ -33,7 +33,7 @@ function Clubs() {
     };
   }, [clubId]);
   useEffect(() => {
-    fetch(`http://localhost:3001/api/clubs/${clubId}`)
+    fetch(`${API_BASE_URL}/api/clubs/${clubId}`)
       .then((response) => response.json())
       .then((data) => {
         setClub(data);
@@ -43,12 +43,12 @@ function Clubs() {
         console.log("club members: ",members);
       })
       .catch((error) => console.error("Error fetching club details:", error));
-    fetch(`http://localhost:3001/api/clubs/${clubId}/events`)
+    fetch(`${API_BASE_URL}/api/clubs/${clubId}/events`)
       .then((response) => response.json())
       .then((data) => setEvents(data))
       .catch((error) => console.error("Error fetching events:", error));
 
-    fetch(`http://localhost:3001/api/club/${clubId}/messages`)
+    fetch(`${API_BASE_URL}/api/club/${clubId}/messages`)
       .then((response) => response.json())
       .then((data) => setMessages(data))
       .catch((error) => console.error("Error fetching messages:", error));
@@ -59,7 +59,7 @@ function Clubs() {
       console.log("I am changing");
       console.log("members to fetch names:",members)
       const response = await axios.post(
-        "http://localhost:3001/api/club/getclubmembersnames",
+        `${API_BASE_URL}/api/club/getclubmembersnames`,
         { members },
         { withCredentials: true }
       );
@@ -90,7 +90,7 @@ function Clubs() {
     setMessages((prevMessages) => [...prevMessages, message]);
     setNewMessage("");
 
-    fetch(`http://localhost:3001/api/club/${clubId}/messages`, {
+    fetch(`${API_BASE_URL}/api/club/${clubId}/messages`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(message),

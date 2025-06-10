@@ -3,6 +3,7 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import { useClub } from '../contexts/clubcontext';
+import API_BASE_URL from "../config";
 function CreateEvent() {
   const [club, setClub] = useState('');
   const [title, setTitle] = useState('');
@@ -17,7 +18,7 @@ function CreateEvent() {
     event.preventDefault();
     const eventData = { club, title, date, time, location, description, attendees };
     console.log(clubId)
-    axios.post('http://localhost:3001/api/createEvent', eventData)
+    axios.post(`${API_BASE_URL}/api/createEvent`, eventData)
       .then(response => {
         if (response.data.success) {
           toast.success('Event created successfully!', { autoClose: 5173});

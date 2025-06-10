@@ -3,6 +3,7 @@ import { useNavigate ,useParams} from "react-router-dom";
 import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import API_BASE_URL from "../config";
 function CreateClubPage() {
   const { user } = useParams();
   const [userName, setUserName] = useState("");
@@ -42,7 +43,7 @@ function CreateClubPage() {
     }
     axios
       .post(
-        "http://localhost:3001/api/createClub",
+        `${API_BASE_URL}/api/createClub`,
         { name, description, president, username, members, imageUrl },
         { withCredentials: true }
       )

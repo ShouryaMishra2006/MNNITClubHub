@@ -8,6 +8,7 @@ import Spinner from "../components/Spinner";
 import * as THREE from "three";
 import NET from "vanta/dist/vanta.net.min";
 import Spotlight from "../components/Spotlight";
+import API_BASE_URL from "../config";
 const HomePage = () => {
   axios.defaults.withCredentials = true;
   const navigate = useNavigate();
@@ -61,7 +62,7 @@ const HomePage = () => {
 
   useEffect(() => {
     axios
-      .get("http://localhost:3001/")
+      .get(`${API_BASE_URL}/`)
       .then((result) => {
         if (result.data !== "Success") {
           navigate("/LoginUser");
@@ -69,8 +70,8 @@ const HomePage = () => {
       })
       .catch((err) => console.error(err));
     Promise.all([
-      axios.get("http://localhost:3001/api/clubs"),
-      axios.get("http://localhost:3001/api/events"),
+      axios.get(`${API_BASE_URL}/api/clubs`),
+      axios.get(`${API_BASE_URL}/api/events`),
     ])
       .then(([clubsResponse, eventsResponse]) => {
         if (Array.isArray(clubsResponse.data.clubs)) {

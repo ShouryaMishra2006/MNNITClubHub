@@ -1,13 +1,13 @@
 import React, { useEffect, useState, useRef } from "react";
-
+import API_BASE_URL from "../config";
 const JobBoard = () => {
   const [jobs, setJobs] = useState([]);
   const [selectedResume, setSelectedResume] = useState({});
   const [uploading, setUploading] = useState({});
-  const inputRefs = useRef({}); // Store refs per jobId
+  const inputRefs = useRef({}); 
 
   useEffect(() => {
-    fetch("http://localhost:3001/api/getalljobs")
+    fetch(`${API_BASE_URL}/api/getalljobs`)
       .then((res) => res.json())
       .then((data) => setJobs(data.jobs || []))
       .catch((err) => console.error("Failed to load jobs", err));
@@ -35,7 +35,7 @@ const JobBoard = () => {
       setUploading((prev) => ({ ...prev, [jobId]: true }));
 
       const res = await fetch(
-        "http://localhost:3001/api/companies/resume/upload",
+        `${API_BASE_URL}/api/companies/resume/upload`,
         {
           method: "POST",
           body: formData,
@@ -46,7 +46,7 @@ const JobBoard = () => {
       if (res.ok) {
         alert("Resume uploaded successfully!");
         console.log("Updated job data:", result.job);
-
+        console.log(res.features)
         setSelectedResume((prev) => ({ ...prev, [jobId]: null }));
         if (inputRefs.current[jobId]) {
           inputRefs.current[jobId].value = null;

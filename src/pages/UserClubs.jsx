@@ -12,6 +12,7 @@ import * as THREE from "three";
 import NET from "vanta/dist/vanta.net.min";
 import { motion } from "framer-motion";
 import JobBoard from "./JobBoard";
+import API_BASE_URL from "../config";
 const HomePage = () => {
   const {user} = useParams()
   const [userName, setUserName] = useState("");
@@ -90,7 +91,7 @@ const HomePage = () => {
   useEffect(() => {
     setUserName(storedName)
     axios
-      .get(`http://localhost:3001/api/yourclubs?username=${storedName}`)
+      .get(`${API_BASE_URL}/api/yourclubs?username=${storedName}`)
       .then((response) => {
         setClubs(response.data.clubs);
         setLoading(false);

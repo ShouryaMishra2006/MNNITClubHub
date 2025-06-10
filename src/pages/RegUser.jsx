@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-
+import API_BASE_URL from "../config";
 function SignUpPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -14,7 +14,7 @@ function SignUpPage() {
   const handleSubmit = (event) => {
     event.preventDefault();
     axios
-      .post("http://localhost:3001/RegUser", { name, email, password })
+      .post(`${API_BASE_URL}/RegUser`, { name, email, password })
       .then((result) => {
         console.log(result);
         if (result.data.success) {
@@ -108,7 +108,7 @@ function SignUpPage() {
           </div>
           <button
             onClick={() =>
-              (window.location.href = `http://localhost:3001/auth/google`)
+              (window.location.href = `${API_BASE_URL}/auth/google`)
             }
             id="oauth"
             className="w-full bg-blue-500 text-white font-semibold py-2 rounded-lg hover:bg-red-600 transition duration-200 mt-4"

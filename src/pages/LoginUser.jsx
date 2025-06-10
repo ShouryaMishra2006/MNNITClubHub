@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import axios from 'axios';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-
+import API_BASE_URL from "../config";
 function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -15,7 +15,7 @@ function LoginPage() {
     event.preventDefault();
     console.log("Logging in as User");
 
-    axios.post('http://localhost:3001/LoginUser', { email, password })
+    axios.post(`${API_BASE_URL}/LoginUser`, { email, password })
       .then(result => {
         console.log("Response data:", result.data);
         if (result.data.success) {
@@ -93,7 +93,7 @@ function LoginPage() {
         </div>
         <button
         onClick={() =>
-          (window.location.href = `http://localhost:3001/auth/google`)
+          (window.location.href = `${API_BASE_URL}/auth/google`)
         }
           id="oauth"
           className="mt-4 w-full bg-blue-500 text-white py-2 rounded-lg shadow-md hover:bg-blue-400 transition-all"
