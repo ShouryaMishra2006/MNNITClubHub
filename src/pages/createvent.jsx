@@ -1,126 +1,152 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { toast } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import { useClub } from '../contexts/clubcontext';
+import 'react-toastify/dist/ReactToastify.css';
 import API_BASE_URL from "../config";
+
 function CreateEvent() {
-  const [club, setClub] = useState('');
   const [title, setTitle] = useState('');
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
   const [location, setLocation] = useState('');
   const [description, setDescription] = useState('');
-  const [attendees, setAttendees] = useState(0);
+  const [theme, setTheme] = useState('light');
+  const { clubId } = useClub();
   const navigate = useNavigate();
-  const {clubId}=useClub();
+
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("theme");
+    setTheme(savedTheme === "dark" ? "dark" : "light");
+  }, []);
+
   const handleSubmit = (event) => {
     event.preventDefault();
-    const eventData = { club, title, date, time, location, description, attendees };
-    console.log(clubId)
+
+    const eventData = {
+      clubId,
+      title,
+      date,
+      time,
+      location,
+      description
+    };
+
     axios.post(`${API_BASE_URL}/api/createEvent`, eventData)
       .then(response => {
         if (response.data.success) {
-          toast.success('Event created successfully!', { autoClose: 5173});
-          setClub('');
+          toast.success('Event created successfully!', { autoClose: 3000 });
           setTitle('');
           setDate('');
           setTime('');
           setLocation('');
           setDescription('');
-          setAttendees(0);
-          navigate(`/ClubOverview/${clubId}`)
+          navigate(`/ClubOverview/${clubId}`);
         } else {
           toast.error('Failed to create event: ' + response.data.message, { autoClose: 3000 });
         }
       })
-      .catch(err => {
+      .catch(() => {
         toast.error('Error creating event', { autoClose: 3000 });
       });
   };
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-lg mx-auto bg-gray-500 p-8 shadow-md rounded">
-      <h2 className="text-2xl font-bold mb-4">Create Event</h2>
-      
-      <label className="block mb-2">
-        Club Name:
-        <input
-          type="text"
-          value={club}
-          onChange={(e) => setClub(e.target.value)}
-          required
-          className="border rounded w-full p-2 mt-1"
-        />
-      </label>
-      
-      <label className="block mb-2">
-        Title:
-        <input
-          type="text"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          required
-          className="border rounded w-full p-2 mt-1"
-        />
-      </label>
-      
-      <label className="block mb-2">
-        Date:
-        <input
-          type="date"
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-          required
-          className="border rounded w-full p-2 mt-1"
-        />
-      </label>
-      
-      <label className="block mb-2">
-        Time:
-        <input
-          type="time"
-          value={time}
-          onChange={(e) => setTime(e.target.value)}
-          required
-          className="border rounded w-full p-2 mt-1"
-        />
-      </label>
-      
-      <label className="block mb-2">
-        Location:
-        <input
-          type="text"
-          value={location}
-          onChange={(e) => setLocation(e.target.value)}
-          required
-          className="border rounded w-full p-2 mt-1"
-        />
-      </label>
-      
-      <label className="block mb-2">
-        Description:
-        <textarea
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          className="border rounded w-full p-2 mt-1"
-        />
-      </label>
-      
-      <label className="block mb-2">
-        Attendees:
-        <input
-          type="number"
-          value={attendees}
-          onChange={(e) => setAttendees(e.target.value)}
-          className="border rounded w-full p-2 mt-1"
-        />
-      </label>
+    <div className={`flex items-center justify-center min-h-screen max-w-full ${
+      theme === "dark" ? "bg-black text-white" : "bg-white text-black"
+    }`}>
+      <div className="shadow-xl rounded-lg p-8 w-full max-w-md border border-indigo-200 dark:border-indigo-700 bg-white dark:bg-blue-600">
+        <h1 className="text-3xl font-bold mb-6 text-center text-indigo-800 dark:text-blue-100">
+          Create Event
+        </h1>
 
-      <button type="submit" className="w-full mt-4 p-2 bg-blue-600 text-white font-semibold rounded">
-        Create Event
-      </button>
-    </form>
+        <form onSubmit={handleSubmit}>
+          <div className="mb-4">
+            <label htmlFor="title" className="block text-indigo-700 dark:text-indigo-200 font-semibold mb-2">
+              Event Title
+            </label>
+            <input
+              type="text"
+              id="title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              required
+              maxLength="40"
+              placeholder="Event Title"
+              className="w-full px-4 py-2 border text-black border-indigo-300 dark:border-indigo-600 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+
+          <div className="mb-4">
+            <label htmlFor="date" className="block text-indigo-700 dark:text-indigo-200 font-semibold mb-2">
+              Date
+            </label>
+            <input
+              type="date"
+              id="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              required
+              className="w-full px-4 py-2 border text-black border-indigo-300 dark:border-indigo-600 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+
+          <div className="mb-4">
+            <label htmlFor="time" className="block text-indigo-700 dark:text-indigo-200 font-semibold mb-2">
+              Time
+            </label>
+            <input
+              type="time"
+              id="time"
+              value={time}
+              onChange={(e) => setTime(e.target.value)}
+              required
+              className="w-full px-4 py-2 border text-black border-indigo-300 dark:border-indigo-600 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+
+          <div className="mb-4">
+            <label htmlFor="location" className="block text-indigo-700 dark:text-indigo-200 font-semibold mb-2">
+              Location
+            </label>
+            <input
+              type="text"
+              id="location"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              required
+              maxLength="40"
+              placeholder="Event Location"
+              className="w-full px-4 py-2 border text-black border-indigo-300 dark:border-indigo-600 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+
+          <div className="mb-4">
+            <label htmlFor="description" className="block text-indigo-700 dark:text-indigo-200 font-semibold mb-2">
+              Description
+            </label>
+            <textarea
+              id="description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows="4"
+              maxLength="100"
+              placeholder="Event Description"
+              className="w-full px-4 py-2 border text-black border-indigo-300 dark:border-indigo-600 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+
+          <button
+            type="submit"
+            className="w-full bg-blue-200 text-blue-600 font-bold py-2 px-4 rounded-md hover:bg-blue-300 transition duration-300"
+          >
+            Create Event
+          </button>
+        </form>
+      </div>
+      <ToastContainer />
+    </div>
   );
 }
 
