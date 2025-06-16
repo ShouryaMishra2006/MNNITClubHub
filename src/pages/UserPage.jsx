@@ -1,255 +1,203 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
-import { useParams } from "react-router-dom";
-import axios from "axios";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faUser, faPlusCircle } from "@fortawesome/free-solid-svg-icons";
 import Footer from "../components/Footer";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faUser, faPlusCircle, faMoon, faSun } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
-import * as THREE from "three";
-import NET from "vanta/dist/vanta.net.min";
-import Spotlight from "../components/Spotlight"
-import Typewriter from "../components/Typewriter"
+import { useAuth } from "../contexts/AuthContext";
+import API_BASE_URL from "../config";
 import { motion } from "framer-motion";
 import JobBoard from "./JobBoard";
-import API_BASE_URL from "../config";
+
 const HomePage = () => {
-  const { user } = useParams();
-  const [userName, setUserName] = useState("");
+  const { user, logout, login } = useAuth();
+  const navigate = useNavigate();
   const [clubs, setClubs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const navigate = useNavigate();
-  const vantaEffect = useRef(null);
-  const vantaContainer = useRef(null);
-  const initializeVanta = () => {
-    if (vantaEffect.current) {
-      vantaEffect.current.destroy();
-    }
-    vantaEffect.current = NET({
-      el: "#vanta-bg",
-      THREE,
-      mouseControls: true,
-      touchControls: true,
-      gyroControls: false,
-      minHeight: 200.0,
-      minWidth: 200.0,
-      scale: 1.0,
-      scaleMobile: 1.0,
-      backgroundColor: 0x111111,
-      color: 0xff6600,
-    });
-  };
+  const [darkMode, setDarkMode] = useState(false);
 
+  // Load user and theme from localStorage
   useEffect(() => {
-    initializeVanta();
-
-    // Reinitialize on navigation back or focus
-    window.addEventListener("focus", initializeVanta);
-    if (vantaContainer.current) {
-      vantaContainer.current.addEventListener("mouseenter", initializeVanta);
+    const storedName = localStorage.getItem("userName");
+    const storedEmail = localStorage.getItem("userEmail");
+    if (!user && storedName && storedEmail) {
+      login({ name: storedName, email: storedEmail });
     }
-    return () => {
-      if (vantaEffect.current) {
-        vantaEffect.current.destroy();
-      }
-      window.removeEventListener("focus", initializeVanta);
-      if (vantaContainer.current) {
-        vantaContainer.current.removeEventListener(
-          "mouseenter",
-          initializeVanta
-        );
-      }
-    };
-  }, []);
-  useEffect(() => {
-    vantaEffect.current = NET({
-      el: "#vanta-bg",
-      THREE,
-      mouseControls: true,
-      touchControls: true,
-      gyroControls: false,
-      minHeight: 200.0,
-      minWidth: 200.0,
-      scale: 1.0,
-      scaleMobile: 1.0,
-      backgroundColor: 0x111111,
-      color: 0xff6600,
-    });
-    return () => {
-      if (vantaEffect.current) vantaEffect.current.destroy();
-    };
+
+    const savedMode = localStorage.getItem("theme");
+    if (savedMode === "dark") {
+      setDarkMode(true);
+    } else {
+      setDarkMode(false);
+    }
   }, []);
 
   useEffect(() => {
-    setUserName(user)
-    localStorage.setItem("userName",user);
-    axios
-      .get(`${API_BASE_URL}/api/clubs`, { withCredentials: true })
-      .then((response) => {
-        setClubs(response.data.clubs);
+    fetch(`${API_BASE_URL}/api/clubs`, { credentials: "include" })
+      .then((res) => res.json())
+      .then((data) => {
+        setClubs(data.clubs);
         setLoading(false);
       })
-      .catch((err) => {
+      .catch(() => {
         setError("Failed to fetch clubs");
         setLoading(false);
       });
   }, []);
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-900 text-white">
-        Loading...
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-900 text-red-500">
-        {error}
-      </div>
-    );
-  }
-  const HandleJoin=(club)=>{
-    console.log("Joining club:", club);
-    console.log(club._id)
-    console.log(userName)
+  const handleJoin = (club) => {
     fetch(`${API_BASE_URL}/api/club/join`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        userName:userName,
+        userName: user.name,
         clubId: club._id,
       }),
     })
-      .then((response) => response.json())
+      .then((res) => res.json())
       .then((data) => {
-        if (data.error) {
-          console.error("Error:", data.error);
-        } else {
-          console.log("Successfully joined club:", data);
-          alert(`You have joined the club: ${club.name}`);
-        }
+        if (data.error) alert(data.error);
+        else alert(`You have joined the club: ${club.name}`);
       })
-      .catch((error) => console.error("Error joining club:", error));
-  }
-  const HandleClubs = () => navigate("/UserClubs");
-  const HandleCreate = () => navigate("/createClub");
-  const HandleUser = () => navigate("/Profile");
-  const HandleJoinedClubs=()=>navigate("/JoinedClubs")
-  const upcomingEvents = [
-    { title: "Robotics Workshop", date: "2024-11-10", time: "10:00 AM" },
-    { title: "Coding Hackathon", date: "2024-11-15", time: "9:00 AM" },
-    { title: "Aero Club Open House", date: "2024-11-20", time: "1:00 PM" },
-  ];
-  const handleLogout = async () => {
-    try {
-      const response=fetch(`${API_BASE_URL}/logout`, {
-        method: "GET",
-        credentials: "include",
-      })
-        console.log(response)
-        if(!response.ok) console.log(response)
-        window.location.href = "/LoginUser"; 
-    } catch (error) {
-        console.error("Logout failed:", error);
-    }
-};
+      .catch(() => alert("Error joining club"));
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate("/LoginUser");
+  };
+
+  const toggleTheme = () => {
+    const newMode = !darkMode;
+    setDarkMode(newMode);
+    localStorage.setItem("theme", newMode ? "dark" : "light");
+  };
+
+  const themeClass = darkMode ? "dark" : "light";
+
+  if (loading)
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white text-gray-900 dark:bg-gray-900 dark:text-white">
+        Loading...
+      </div>
+    );
+
+  if (error)
+    return (
+      <div className="min-h-screen flex items-center justify-center text-red-500 bg-white dark:bg-gray-900 dark:text-white">
+        {error}
+      </div>
+    );
 
   return (
-    <div className="h-screen w-full bg-gray-900/50 text-gray-100">
-      <div id="vanta-bg" className=" bg-gray-900/100">
-        <nav className="bg-purple-800/90 backdrop-blur-sm p-4 fixed w-full z-10">
-          <div className="w-full flex justify-between items-center max-w-full mx-auto">
-            <h1 className="text-2xl font-bold text-gray-100">MNNITClubHub</h1>
-            <div className="flex space-x-4">
-            <button onClick={HandleJoinedClubs} className="hover:underline">
-                Joined Clubs
-              </button>
-              <button onClick={HandleClubs} className="hover:underline">
-                Your Clubs
-              </button>
-              <button
-                onClick={HandleCreate}
-                className="hover:underline flex items-center space-x-2"
-              >
-                <FontAwesomeIcon icon={faPlusCircle} />
-                <span>Create Club</span>
-              </button>
-              <button
-                onClick={HandleUser}
-                className="flex items-center space-x-2 hover:underline"
-              >
-                <FontAwesomeIcon icon={faUser} />
-                <span>{userName || "User"}</span>
-              </button>
-              <button onClick={handleLogout} className="font-bold hover:underline">Logout</button>
-            </div>
+    <div className={`min-h-screen min-w-full flex flex-col ${themeClass === "dark" ? "bg-gray-900 text-gray-100" : "bg-white text-gray-900"}`}>
+      {/* Navbar */}
+      <nav className="bg-white/80 dark:bg-gray-700/50 backdrop-blur-sm shadow-md fixed w-full z-20 border-b border-gray-200 dark:border-gray-700">
+        <div className="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+          <h1 className="text-2xl font-extrabold text-blue-600 dark:text-blue-600 tracking-tight">
+            MNNITClubHub
+          </h1>
+          <div className="flex gap-4 items-center font-medium">
+            <button onClick={() => navigate("/JoinedClubs")} className="hover:text-blue-500 transition">Joined</button>
+            <button onClick={() => navigate("/UserClubs")} className="hover:text-blue-500 transition">Your Clubs</button>
+            <button onClick={() => navigate("/createClub")} className="flex items-center gap-1 hover:text-blue-500 transition">
+              <FontAwesomeIcon icon={faPlusCircle} /> <span>Create</span>
+            </button>
+            <button className="flex items-center gap-1 hover:text-blue-500 transition">
+              <FontAwesomeIcon icon={faUser} /> <span>{user?.name || "User"}</span>
+            </button>
+            <button onClick={toggleTheme} className="hover:text-blue-500 transition">
+              <FontAwesomeIcon icon={darkMode ? faSun : faMoon} />
+            </button>
+            <button onClick={handleLogout} className="bg-blue-600 text-white px-3 py-1.5 rounded hover:bg-blue-500 transition">
+              Logout
+            </button>
           </div>
-        </nav>
-        
-        <div className="h-screen w-full flex flex-col justify-center items-center text-center bg-gray-800/70">
-        <h1 className="text-4xl text-pretty text-gray-300 font-bold py-2">
-          Hi, {userName} !
-        </h1>
-        <h1 className="text-ellipsis text-6xl font-extrabold text-purple-400 mb-4">
-          Welcome to MNNITClubHub
-        </h1>
-        <p className="text-xl text-gray-300 mb-6">
-          Connect with clubs, manage events, and track your journey!
-        </p>
         </div>
-      </div>
-      <main className="max-w-full mx-auto p-6 ">
-      <Spotlight>
+      </nav>
+
+      <main className="flex-grow p-8 w-full">
         <section className="mt-12">
-          <h2 className="text-4xl font-semibold text-purple-400 text-center mb-8">
+          <section className="pt-28 pb-16 text-center bg-gradient-to-b">
+            <div className="relative inline-block">
+              {/* Left spotlight */}
+              <div className="absolute -left-[200px] -top-[100px] w-[400px] h-[400px] pointer-events-none z-0">
+                <div
+                  className={`w-full h-full opacity-30 blur-3xl ${
+                    darkMode ? "bg-white" : "bg-black"
+                  }`}
+                  style={{
+                    background: `radial-gradient(circle at top, ${
+                      darkMode ? "white" : "black"
+                    } 0%, transparent 70%)`,
+                    clipPath: "polygon(0% 40%, 100% 0%, 100% 100%, 0% 100%)",
+                    transform: "rotate(-55deg)",
+                  }}
+                ></div>
+              </div>
+
+              <h1 className="relative text-4xl sm:text-5xl font-bold text-blue-800 dark:text-blue-600 z-10">
+                Hi, {user?.name} 👋
+              </h1>
+            </div>
+
+            <h2 className="mt-4 text-2xl sm:text-3xl font-semibold">
+              <span className="text-blue-700 dark:text-blue-400">
+                Welcome to MNNITClubHub
+              </span>
+            </h2>
+            <p className="mt-3 text-gray-700 dark:text-gray-400 max-w-xl mx-auto">
+              Connect with clubs, manage events, and track your journey like
+              never before!
+            </p>
+          </section>
+
+          <h2 className="text-3xl font-semibold text-center text-blue-400 mb-6">
             COLLEGE CLUBS
           </h2>
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {clubs.map((club, index) => (
-                  <motion.div
-                    key={index}
-                    className="bg-gradient-to-r from-purple-500 via-purple-600 to-purple-700 p-6 rounded-lg shadow-lg transform transition-all hover:scale-105 hover:shadow-xl hover:opacity-90 relative overflow-hidden"
-                    whileHover={{ scale: 1.05 }}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.5 }}
-                  >
-                    {/* Club Image */}
-                    {club.imageUrl && (
-                      <img
-                        src={club.imageUrl}
-                        alt={`${club.name} Image`}
-                        className="w-full h-48 object-cover rounded-lg mb-4"
-                      />
-                    )}
+            {clubs.map((club, index) => (
+              <motion.div
+                key={index}
+                className="bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 p-6 rounded-lg shadow-lg transform transition-all hover:scale-105 hover:shadow-xl hover:opacity-90 relative overflow-hidden"
+                whileHover={{ scale: 1.05 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.5 }}
+              >
+                {club.imageUrl && (
+                  <img
+                    src={club.imageUrl}
+                    alt={`${club.name} Image`}
+                    className="w-full h-48 object-cover rounded-lg mb-4"
+                  />
+                )}
 
-                    {/* Glow Effect on Club Name */}
-                    <h3 className="text-3xl font-bold text-purple-100 mb-3 tracking-wide relative z-10">
-                      {club.name}
-                      <span className="absolute inset-0 bg-gradient-to-r from-yellow-400 via-pink-500 to-purple-600 blur-2xl opacity-30 rounded-lg z-[-1]"></span>
-                    </h3>
+                <h3 className="text-3xl font-bold text-purple-100 mb-3 tracking-wide relative z-10">
+                  {club.name}
+                  <span className="absolute inset-0 bg-gradient-to-r from-yellow-400 via-pink-500 to-blue-600 blur-2xl opacity-30 rounded-lg z-[-1]"></span>
+                </h3>
 
-                    {/* Club Description */}
-                    <p className="text-gray-100 mb-4">{club.description}</p>
-                    <h3 className="text-ellipsis text-gray-100 mb:4 py-2 px-1">Members : {club.memberCount}</h3>
-                    {/* Join Club Button */}
-                    <button onClick={()=>HandleJoin(club)} className="bg-purple-700 text-white px-6 py-3 rounded-lg shadow-md hover:bg-purple-500 hover:shadow-xl focus:ring-4 focus:ring-purple-300 transition-all transform hover:scale-105 relative z-10">
-                      Join Club
-                    </button>
+                <p className="text-gray-100 mb-4">{club.description}</p>
 
-                    {/* Decorative Element */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-blue-500 via-pink-500 to-purple-600 opacity-10"></div>
-                  </motion.div>
-              ))}
-            </div>
-            
+                <button
+                  onClick={() => handleJoin(club)}
+                  className="bg-blue-700 text-white px-6 py-3 rounded-lg shadow-md hover:bg-blue-500 hover:shadow-xl focus:ring-4 focus:ring-blue-300 transition-all transform hover:scale-105 relative z-10"
+                >
+                  Join Club
+                </button>
+
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-500 via-pink-500 to-blue-600 opacity-10"></div>
+              </motion.div>
+            ))}
+          </div>
         </section>
-        </Spotlight>
-        <JobBoard/>
       </main>
+
+      <JobBoard />
+
       <div className="fixed bottom-0 left-0 w-full z-50">
         <Footer />
       </div>

@@ -3,9 +3,9 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Github, Calendar, MessageSquare, Send, Users } from "lucide-react";
 import { io } from "socket.io-client";
 import axios from "axios";
-const ENDPOINT = "http://localhost:3001";
 let socket;
 import API_BASE_URL from "../config";
+const ENDPOINT=API_BASE_URL
 function Clubs() {
   const { clubId } = useParams();
   const [club, setClub] = useState(null);

@@ -64,16 +64,16 @@ const JobBoard = () => {
 
   return (
     <div className="p-8 text-gray-200">
-      <h2 className="text-3xl font-bold text-center mb-6 text-purple-400">
+      <h2 className="text-3xl font-bold text-center mb-6 text-blue-600">
         Available Job Openings
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {jobs.map((job) => (
           <div
             key={job._id}
-            className="bg-gray-800 p-6 rounded-lg shadow-lg border border-purple-600"
+            className=" bg-blue-800 via-blue-600 to-blue-700 p-6 rounded-lg shadow-lg border border-blue-600"
           >
-            <h3 className="text-xl font-bold text-yellow-300">
+            <h3 className="text-xl font-bold text-blue-100">
               {job.llmExtractedFeatures[0] || "Company"}
             </h3>
 
@@ -99,7 +99,7 @@ const JobBoard = () => {
               <button
                 disabled={uploading[job._id]}
                 onClick={() => handleUpload(job._id)}
-                className="mt-3 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50"
+                className="mt-3 px-4 py-2 bg-blue-950 text-white rounded-lg hover:bg-blue-400 disabled:opacity-50"
               >
                 {uploading[job._id] ? "Uploading..." : "Submit Resume"}
               </button>

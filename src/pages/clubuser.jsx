@@ -3,154 +3,153 @@ import { Github, Calendar, MessageSquare, Send } from "lucide-react";
 import { useParams } from "react-router-dom";
 import { io } from "socket.io-client";
 import API_BASE_URL from "../config";
-const ENDPOINT = "http://localhost:3001";
+
+const ENDPOINT = API_BASE_URL;
 let socket;
+
 function Clubs() {
   const { clubId } = useParams();
-  const [isJoined, setIsJoined] = useState(false);
-  const [events, setEvents] = useState([]);
+  const storedName = localStorage.getItem("userName");
+
   const [club, setClub] = useState({});
+  const [events, setEvents] = useState([]);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
-  const [userRegisteredEvents, setuserRegisteredEvents] = useState([]);
-  const storedName = localStorage.getItem("userName");
+  const [userRegisteredEvents, setUserRegisteredEvents] = useState([]);
+  const [darkMode, setDarkMode] = useState(false);
+  // Register for Event
   const handleRegister = async (eventId) => {
     try {
       const response = await fetch(
         `${API_BASE_URL}/api/events/${eventId}/${storedName}/register`,
-        { method: "POST" ,
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ name: storedName }), 
-        },
-        
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name: storedName }),
+        }
       );
-      console.log(response)
-      if (!response.ok) {
-        throw new Error(`Failed to register for event: ${response.statusText}`);
-      }
       const data = await response.json();
-      setuserRegisteredEvents(data.RegisteredEvents);
-      console.log(userRegisteredEvents);
+      setUserRegisteredEvents(data.RegisteredEvents);
+
       alert(`Registered for event: ${data.message}`);
     } catch (error) {
-      console.log(userRegisteredEvents)
-      console.error("Error registering for event:", error.message);
+      console.error("Registration error:", error.message);
     }
   };
 
+  // Fetch Club Data
+  useEffect(() => {
+    const savedMode = localStorage.getItem("theme");
+    if (savedMode === "dark") {
+      setDarkMode(true);
+    } else {
+      setDarkMode(false);
+    }
+    fetch(`${API_BASE_URL}/api/clubs/${clubId}`)
+      .then((res) => res.json())
+      .then((data) => setClub(data));
+
+    fetch(`${API_BASE_URL}/api/clubs/${clubId}/events`)
+      .then((res) => res.json())
+      .then((data) => setEvents(data));
+
+    fetch(`${API_BASE_URL}/api/club/${clubId}/messages`)
+      .then((res) => res.json())
+      .then((data) => setMessages(data));
+  }, [clubId]);
+
+  // WebSocket Messages
   useEffect(() => {
     socket = io(ENDPOINT, {
       transports: ["websocket"],
       withCredentials: true,
     });
-    socket.emit("joinRoom", clubId);
-    socket.emit("messageReceived", newMessage);
-    socket.emit("sendMessage", { clubId, newMessage });
-    socket.on("messageReceived", (newMessage) => {
-      setMessages((prevMessages) => [...prevMessages, newMessage]);
-    });
 
-    return () => {
-      socket.disconnect(); 
-    };
-  }, [clubId, newMessage]);
-  useEffect(() => {
-    fetch(`${API_BASE_URL}/api/clubs/${clubId}`)
-      .then((response) => response.json())
-      .then((data) => setClub(data))
-      .catch((error) => console.error("Error fetching club details:", error));
-    fetch(`${API_BASE_URL}/api/clubs/${clubId}/events`)
-      .then((response) => response.json())
-      .then((data) => setEvents(data))
-      .catch((error) => console.error("Error fetching events:", error));
-    fetch(`${API_BASE_URL}/api/club/${clubId}/messages`)
-      .then((response) => response.json())
-      .then((data) => setMessages(data))
-      .catch((error) => console.error("Error fetching messages:", error));
+    socket.emit("joinRoom", clubId);
+    socket.on("messageReceived", (msg) =>
+      setMessages((prev) => [...prev, msg])
+    );
+
+    return () => socket.disconnect();
   }, [clubId]);
 
   const handleSendMessage = () => {
-    if (newMessage.trim()) {
-      const message = {
-        sender: storedName,
-        text: newMessage,
-        timestamp: new Date().toLocaleString("en-GB", {
-          day: "2-digit",
-          month: "2-digit",
-          year: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
-          second: "2-digit",
-        }),
-      };
-      setMessages([...messages, message]);
-      setNewMessage("");
-      fetch(`${API_BASE_URL}/api/club/${clubId}/messages`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(message),
-      }).catch((error) => console.error("Error sending message:", error));
-    }
+    if (!newMessage.trim()) return;
+
+    const message = {
+      sender: storedName,
+      text: newMessage,
+      timestamp: new Date().toLocaleString("en-GB", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      }),
+    };
+
+    setMessages([...messages, message]);
+    setNewMessage("");
+    socket.emit("sendMessage", { clubId, newMessage });
+
+    fetch(`${API_BASE_URL}/api/club/${clubId}/messages`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(message),
+    });
   };
 
   return (
     <div
-      style={{
-        backgroundImage: `url(${club.imageUrl})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-      }}
-      className="min-h-screen flex flex-col bg-gray-50 "
+      className={`min-h-screen min-w-full flex flex-col  ${ darkMode ? "bg-gray-800 text-gray-100" : "bg-white text-gray-900"}`}
     >
-      {/* Header Section */}
-      <header className="sticky top-0 bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-800 text-white shadow-lg">
-        <div className="container mx-auto flex items-center justify-between px-6 py-4">
-          <div className="flex items-center space-x-4">
-            <div className="bg-white/10 p-3 rounded-lg backdrop-blur-sm">
-              <Github className="h-10 w-10" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold">{club.name}</h1>
-              <h2 className="text-xl font-semibold text-white my-3">
-                President : {club.president}
-              </h2>
-              <p className="text-blue-100">{club.description}</p>
-            </div>
+      {/* Header */}
+      <header className="bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-800 text-white p-6 shadow-md">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center gap-6">
+          <div className="bg-white/10 p-3 rounded-lg backdrop-blur-sm">
+            <Github className="h-10 w-10" />
           </div>
-          
+          <div>
+            <h1 className="text-3xl font-bold">{club.name}</h1>
+            <p className="text-white text-lg">President: {club.president}</p>
+            <p className="text-blue-100">{club.description}</p>
+          </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-6 py-8 space-y-8">
+      <main className={`max-w-7xl mx-auto px-6 py-8 grid grid-cols-1 lg:grid-cols-5 gap-8 bg-blue-200 rounded-xl`}>
         {/* Events Section */}
-        <section className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
+        <section
+          className={`lg:col-span-3 rounded-xl shadow p-6 max-w-4xl
+          }`}
+        >
+          <h2 className="text-xl text-black font-bold flex items-center mb-4">
             <Calendar className="h-5 w-5 mr-2 text-blue-600" />
             Upcoming Events
           </h2>
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {events.length > 0 ? (
+          <div className="grid sm:grid-cols-2 text-black bg-white rounded-xl gap-6 max-w-xl">
+            {events.length ? (
               events.map((event) => (
                 <div
-                  key={event.id}
-                  className="p-4 border rounded-lg shadow hover:bg-gray-50 transition"
+                  key={event._id}
+                  className={`p-4 border  rounded-lg hover:shadow-md `}
                 >
-                  <h3 className="font-semibold text-gray-800">{event.title}</h3>
-                  <p className="text-sm text-gray-600">
+                  <h3 className="text-lg font-semibold">{event.title}</h3>
+                  <p className="text-sm">
                     {event.date} • {event.time}
                   </p>
-                  <p className="text-sm text-gray-600">{event.location}</p>
-                  <p className="text-sm text-gray-700 mt-2">
-                    {event.description}
-                  </p>
-      
+                  <p className="text-sm">{event.location}</p>
+                  <p className="text-sm mt-2">{event.description}</p>
                   <button
                     onClick={() => handleRegister(event._id)}
-                    disabled={userRegisteredEvents.includes(event._id)} 
-                    className="mt-2 text-sm text-blue-600 hover:text-blue-700 font-medium"
+                    disabled={userRegisteredEvents.includes(event._id)}
+                    className={`mt-2 text-sm font-medium ${
+                      userRegisteredEvents.includes(event._id)
+                        ? "text-green-500"
+                        : "text-blue-500 hover:underline"
+                    }`}
                   >
                     {userRegisteredEvents.includes(event._id)
                       ? "Registered"
@@ -159,70 +158,73 @@ function Clubs() {
                 </div>
               ))
             ) : (
-              <p className="text-gray-600">No events available</p>
+              <p className="text-gray-500">No events available.</p>
             )}
           </div>
         </section>
 
         {/* Discussions Section */}
-        <section className="lg:flex-row gap-6">
-          <div className="w-full lg:w-3/4 bg-white rounded-lg shadow p-6">
-            <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
-              <MessageSquare className="h-5 w-5 mr-2 text-blue-600" />
-              Discussions
-            </h2>
-            <div
-              className="flex flex-col space-y-4 overflow-y-auto"
-              style={{ maxHeight: "400px" }}
-            >
-              {messages.length > 0 ? (
-                messages.map((message, index) => (
+        <section
+          className={`lg:col-span-2 flex flex-col rounded-xl shadow p-6 bg-white max-w-2xl
+          }`}
+        >
+          <h2 className="text-xl font-bold flex items-center mb-4">
+            <MessageSquare className="h-5 w-5 mr-2 text-blue-600" />
+            Discussions
+          </h2>
+          <div
+            className="flex-grow overflow-y-auto space-y-4 mb-4 pr-1"
+            style={{ maxHeight: "500px" }}
+          >
+            {messages.length ? (
+              messages.map((msg, index) => (
+                <div
+                  key={index}
+                  className={`flex ${
+                    msg.sender === storedName ? "justify-end" : "justify-start"
+                  }`}
+                >
                   <div
-                    key={index}
-                    className={`flex ${
-                      message.sender === storedName ? "justify-end" : ""
+                    className={`p-3 rounded-lg max-w-xs break-words ${
+                      msg.sender === storedName
+                        ? "bg-blue-500 text-white"
+                        : 
+                      "bg-blue-500"
+                        
                     }`}
                   >
-                    <div
-                      className={`p-4 rounded-lg shadow ${
-                        message.sender === storedName
-                          ? "bg-blue-100"
-                          : "bg-gray-100"
-                      }`}
-                    >
-                      <p className="font-semibold text-blue-900">
-                        {message.sender === storedName
-                          ? "You"
-                          : message.sender === club.username
-                          ? "Admin"
-                          : message.sender}
-                      </p>
-                      <p className="text-gray-800">{message.text}</p>
-                      <p className="text-xs text-gray-500 text-right">
-                        {message.timestamp}
-                      </p>
-                    </div>
+                    <p className="font-semibold">
+                      {msg.sender === storedName
+                        ? "You"
+                        : msg.sender === club.username
+                        ? "Admin"
+                        : msg.sender}
+                    </p>
+                    <p className="text-sm">{msg.text}</p>
+                    <p className="text-xs text-right text-white">
+                      {msg.timestamp}
+                    </p>
                   </div>
-                ))
-              ) : (
-                <p className="text-gray-600">No messages yet</p>
-              )}
-            </div>
-            <div className="flex items-center bg-white shadow rounded-lg p-2 ">
-              <input
-                type="text"
-                className="flex-1 border rounded-lg px-4 py-2 "
-                placeholder="Type a message..."
-                value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
-              />
-              <button
-                onClick={handleSendMessage}
-                className="ml-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-              >
-                <Send className="h-5 w-5" />
-              </button>
-            </div>
+                </div>
+              ))
+            ) : (
+              <p className="text-gray-500">No messages yet.</p>
+            )}
+          </div>
+          <div className="flex">
+            <input
+              type="text"
+              className="flex-1 border px-3 py-2 rounded-l-lg"
+              placeholder="Type a message..."
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+            />
+            <button
+              onClick={handleSendMessage}
+              className="px-4 bg-blue-600 text-white rounded-r-lg hover:bg-blue-700"
+            >
+              <Send className="h-5 w-5" />
+            </button>
           </div>
         </section>
       </main>
