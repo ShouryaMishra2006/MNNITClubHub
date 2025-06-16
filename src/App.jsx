@@ -23,7 +23,7 @@ function App() {
           <Route path="/LoginAdmin" element={<LoginAdmin />} />
           <Route path="/admin-dashboard" element={<AdminDashboard />} />
           <Route path="/RegUser" element={<RegUser/>}/>
-          <Route path="/UserPage/:user" element={<UserPage/>}/>
+          <Route path="/UserPage/:username" element={<UserPage/>}/>
           <Route path="/UserClubs" element={<UserClubs/>}/>
           <Route path="/ClubOverview/:clubId" element={<ClubOverview/>}/>
           <Route path="/ClubUser/:clubId" element={<ClubUser/>}/>

@@ -43,7 +43,7 @@ const HomePage = () => {
   if (loading) return <Spinner />;
 
   return (
-    <div className="min-h-screen flex flex-col bg-blue-400 from-blue-800 via-blue-900 to-white-900 text-white">
+    <div className="min-h-screen flex flex-col bg-blue-100 from-blue-800 via-blue-900 to-white-900 text-white">
       <Spotlight>
         <div className="fixed top-0 left-0 w-full z-50">
           <Navbar />

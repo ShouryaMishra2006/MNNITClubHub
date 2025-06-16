@@ -119,12 +119,11 @@ function Clubs() {
       </header>
 
       {/* Main Content */}
-      <main className={`max-w-7xl mx-auto px-6 py-8 grid grid-cols-1 lg:grid-cols-5 gap-8 bg-blue-200 rounded-xl`}>
+      <main className="max-w-7xl mx-auto px-6 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8 bg-white-200 rounded-xl">
+
         {/* Events Section */}
-        <section
-          className={`lg:col-span-3 rounded-xl shadow p-6 max-w-4xl
-          }`}
-        >
+        <section className="lg:col-span-7 rounded-xl shadow p-6 max-w-5xl bg-white">
+
           <h2 className="text-xl text-black font-bold flex items-center mb-4">
             <Calendar className="h-5 w-5 mr-2 text-blue-600" />
             Upcoming Events
@@ -164,10 +163,8 @@ function Clubs() {
         </section>
 
         {/* Discussions Section */}
-        <section
-          className={`lg:col-span-2 flex flex-col rounded-xl shadow p-6 bg-white max-w-2xl
-          }`}
-        >
+        <section className="lg:col-span-5 flex flex-col rounded-xl shadow p-6 bg-white max-w-3xl">
+
           <h2 className="text-xl font-bold flex items-center mb-4">
             <MessageSquare className="h-5 w-5 mr-2 text-blue-600" />
             Discussions
@@ -189,7 +186,7 @@ function Clubs() {
                       msg.sender === storedName
                         ? "bg-blue-500 text-white"
                         : 
-                      "bg-blue-500"
+                      "bg-blue-500 text-white"
                         
                     }`}
                   >

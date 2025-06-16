@@ -8,19 +8,32 @@ import { useAuth } from "../contexts/AuthContext";
 import API_BASE_URL from "../config";
 import { motion } from "framer-motion";
 import JobBoard from "./JobBoard";
-
+import { useLocation } from "react-router-dom";
+import { useParams } from "react-router-dom"; 
 const HomePage = () => {
   const { user, logout, login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation(); 
   const [clubs, setClubs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [darkMode, setDarkMode] = useState(false);
+  const { username } = useParams(); // ← extract the `:user` param
 
+  useEffect(() => {
+    if (username) {
+      localStorage.setItem("userName", username); // optional
+      console.log("Username from URL param:", username);
+    }
+  }, [user]);
   // Load user and theme from localStorage
   useEffect(() => {
-    const storedName = localStorage.getItem("userName");
+    
+    let storedName = localStorage.getItem("userName");
     const storedEmail = localStorage.getItem("userEmail");
+    if(username){
+      storedName=username
+    }
     if (!user && storedName && storedEmail) {
       login({ name: storedName, email: storedEmail });
     }
@@ -105,7 +118,7 @@ const HomePage = () => {
               <FontAwesomeIcon icon={faPlusCircle} /> <span>Create</span>
             </button>
             <button className="flex items-center gap-1 hover:text-blue-500 transition">
-              <FontAwesomeIcon icon={faUser} /> <span>{user?.name || "User"}</span>
+              <FontAwesomeIcon icon={faUser} /> <span>{user?.name || username}</span>
             </button>
             <button onClick={toggleTheme} className="hover:text-blue-500 transition">
               <FontAwesomeIcon icon={darkMode ? faSun : faMoon} />
@@ -138,7 +151,7 @@ const HomePage = () => {
               </div>
 
               <h1 className="relative text-4xl sm:text-5xl font-bold text-blue-800 dark:text-blue-600 z-10">
-                Hi, {user?.name} 👋
+                Hi, {user?.name || username} 👋
               </h1>
             </div>
 

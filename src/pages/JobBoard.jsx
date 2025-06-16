@@ -64,14 +64,14 @@ const JobBoard = () => {
 
   return (
     <div className="p-8 text-gray-200">
-      <h2 className="text-3xl font-bold text-center mb-6 text-blue-600">
+      <h2 className="text-3xl font-bold text-center mb-6 text-blue-500">
         Available Job Openings
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {jobs.map((job) => (
           <div
             key={job._id}
-            className=" bg-blue-800 via-blue-600 to-blue-700 p-6 rounded-lg shadow-lg border border-blue-600"
+            className=" bg-blue-600 via-blue-600 to-blue-700 p-6 rounded-lg shadow-lg border border-blue-600"
           >
             <h3 className="text-xl font-bold text-blue-100">
               {job.llmExtractedFeatures[0] || "Company"}
