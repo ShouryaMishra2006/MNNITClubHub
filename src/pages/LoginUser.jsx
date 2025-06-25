@@ -139,7 +139,7 @@ function LoginPage() {
         </div>
 
         <button
-          onClick={() => window.location.href = `${API_BASE_URL}/auth/google`}
+          onClick={() => window.location.href = `${API_BASE_URL}/auth/google/login`}
           className="w-full bg-red-500 text-white py-2 rounded-lg shadow-md hover:bg-red-600 transition-all font-semibold"
         >
           Login with Google
