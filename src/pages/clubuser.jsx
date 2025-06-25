@@ -211,7 +211,7 @@ function Clubs() {
           <div className="flex">
             <input
               type="text"
-              className="flex-1 border px-3 py-2 rounded-l-lg"
+              className="text-black flex-1 border px-3 py-2 rounded-l-lg"
               placeholder="Type a message..."
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
