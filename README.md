@@ -10,8 +10,6 @@ The Student Portal is the heart of MNNITClub, designed to foster community engag
 
 🧑‍💻 Key Functionalities:
 
-🔐 MNNIT-Only Access: Only students with verified MNNIT email IDs can register, ensuring an exclusive and secure network.
-
 🏢 Club Creation & Administration:
 
 Students can create new clubs and automatically become the admin.
