@@ -14,7 +14,7 @@ The Student Portal is the heart of MNNITClub, designed to foster community engag
 
 Students can create new clubs and automatically become the admin.
 
-Admins can approve/reject membership requests, create events, and manage discussions.
+Admins can create events, and manage discussions.
 
 💬 Real-time Discussions:
 
@@ -26,7 +26,7 @@ Promotes better coordination for events, projects, and brainstorming among club 
 
 Club admins can schedule events, track participation, and notify members.
 
-Students can RSVP and get reminders for events they're part of.
+Students can RSVP events they're part of.
 
 👥 Member Directory:
 
