@@ -276,7 +276,7 @@ io.on("connection", (socket) => {
     const { clubId, text } = message;
     console.log(clubId);
     if (clubId) {
-      socket.to(clubId).emit("joinRoom", message);
+      socket.to(clubId).emit("messageReceived", message);
       console.log(`Message broadcasted to room: ${clubId}`);
     }
   });
